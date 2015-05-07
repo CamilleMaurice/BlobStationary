@@ -1,10 +1,14 @@
 #include "blobfuns.h"
+#include "opencv2/imgproc/imgproc_c.h"
+#include <opencv2/opencv.hpp>
 
 #define FPS 25 //framerate of the input video
 #define MIN_SECS 10.0 //minimum number of seconds to consider a foreground pixel as stationary
 
 #define C_COST 1 //increment cost for stationary detection
 #define D_COST 5 //penalization cost for stationary detection
+
+using namespace cv;
 
 /**
  *	Function to detect stationary foreground based on accumulator techniques. All the input arguments must be 
@@ -40,8 +44,8 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 	//(we must have the same FG in 2 consecutive frames
 	for(int i = 0; i<s_frame.width ; i++){
 		for(int j = 0 ; i<s_frame.height ; j ++){
-			if(fgmask.at<uchar>(j,i) == 255){
-				fgmask_counter.at<uchar>(j,i) += 1;
+			if(fgmaskM.at<uchar>(j,i) == 255){
+				fgmask_counterM.at<uchar>(j,i) += 1;
 			}
 		}
 	}
@@ -51,8 +55,8 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 	//...
 	for(int i = 0; i<s_frame.width ; i++){
 		for(int j = 0 ; i<s_frame.height ; j ++){
-			if(fgmask_counter.at<uchar>(j,i) >2){
-				sfgmask.at<uchar>(j,i) = 255;
+			if(fgmask_counterM.at<uchar>(j,i) >2){
+				sfgmaskM.at<uchar>(j,i) = 255;
 			}
 		}
 	}

@@ -31,8 +31,9 @@ int main()
 	Mat outblobsM, outlabelsM;
 	IplImage *outblobs=NULL, *outlabels=NULL ; //output images for blob extraction and blob labels
 	BlobList *blobList = new BlobList();
-	IplImage *fgmask_counter=NULL;
-	IplImage *sfgmask=NULL;
+	IplImage *fgmask_counter= NULL;//ew IplImage();
+	IplImage *sfgmask=NULL;//new IplImage;
+	
 	
 	//cvSet(fgmask_counter, cvScalar(0));
 	
@@ -58,6 +59,12 @@ int main()
 	}
 	
 	frame = cvQueryFrame( capture );
+	//affect
+	fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
+	cvNamedWindow("test");
+	cvNamedWindow("pouf", CV_WINDOW_AUTOSIZE); 
+	cvShowImage("pouf",sfgmask);
+	cvShowImage("test",fgmask_counter);
 		
 		
 	//create output windows	
@@ -86,10 +93,11 @@ int main()
 		erode(fgM,fgM,element1);
 		dilate(fgM,fgM,element2);
 		
+		
 		//Compute Fg stationary  mask
 		IplImage *fg = new IplImage(fgM);
 		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask);
-		
+		//~ 
 			
 		//
 		imshow("frame", frameM);

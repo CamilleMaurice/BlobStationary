@@ -3,8 +3,8 @@ INCLUDES = /usr/include/opencv-2.3.1/
 
 all: vatsLab2
 
-vatsLab2: main.o BlobList.o BasicBlob.o blobextract.o blobclassify.o
-	g++ -o vats main.o BlobList.o BasicBlob.o blobextract.o blobclassify.o $(LIBS) -lm
+vatsLab2: main.o BlobList.o BasicBlob.o blobextract.o blobclassify.o blobstationary.o
+	g++ -o vats main.o BlobList.o BasicBlob.o blobextract.o blobclassify.o blobstationary.o $(LIBS) -lm
 
 main.o: main.cpp
 	g++ -Wno-write-strings -c main.cpp blobfuns.h -I$(INCLUDES) -O
@@ -21,5 +21,7 @@ blobextract.o: blobextract.cpp
 blobclassify.o: blobclassify.cpp
 	g++ -Wno-write-strings -c blobclassify.cpp -I$(INCLUDES) -O
 	
+blobstationary.o: blobstationary.cpp
+	g++ -Wno-write-strings -c blobstationary.cpp -I$(INCLUDES) -O
 clean: 
 	rm *.o; rm result.mpg; rm vats
