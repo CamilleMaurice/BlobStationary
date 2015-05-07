@@ -7,7 +7,7 @@ vatsLab2: main.o BlobList.o BasicBlob.o blobextract.o blobclassify.o
 	g++ -o vats main.o BlobList.o BasicBlob.o blobextract.o blobclassify.o $(LIBS) -lm
 
 main.o: main.cpp
-	g++ -Wno-write-strings -c main.cpp -I$(INCLUDES) -O
+	g++ -Wno-write-strings -c main.cpp blobfuns.h -I$(INCLUDES) -O
 	
 BlobList.o: BlobList.cpp
 	g++ -Wno-write-strings -c BlobList.cpp -I$(INCLUDES) -O

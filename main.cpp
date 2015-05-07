@@ -29,13 +29,18 @@ int main()
 	Mat fgM, bgM;
 	IplImage *frame=NULL; //images for background subtraction	
 	Mat outblobsM, outlabelsM;
-	IplImage *outblobs=NULL, *outlabels=NULL; //output images for blob extraction and blob labels
+	IplImage *outblobs=NULL, *outlabels=NULL ; //output images for blob extraction and blob labels
 	BlobList *blobList = new BlobList();
+	IplImage *fgmask_counter=NULL;
+	IplImage *sfgmask=NULL;
+	
+	//cvSet(fgmask_counter, cvScalar(0));
 	
 	//BG subtractor initialization
 	cv::BackgroundSubtractorMOG2 subtractor;
     //this works on the university environment:
     subtractor.nmixtures = 3;
+    //subtractor.history = 1;
 	//this is for subsequent versions of OpenCV:
 	//subtractor.set("nmixtures",3);
 	
@@ -56,7 +61,7 @@ int main()
 		
 		
 	//create output windows	
-	//namedWindow("frameM");
+	namedWindow("BG");
 	//namedWindow("fireMask");
 	cvNamedWindow("mainWin", CV_WINDOW_AUTOSIZE); 
 	//create output writer
@@ -72,18 +77,21 @@ int main()
 		i++;
 		start =((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
 		//background subtraction (final foreground mask must be placed in 'fg' variable)		
-		subtractor.operator()(frameM,fgM);
+		subtractor.operator()(frameM,fgM,0.000000000000001);
         subtractor.getBackgroundImage(bgM);
+        
+        int erosion_size = 1;	
+		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 7 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
+		Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(10 * erosion_size + 1, 5 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
+		erode(fgM,fgM,element1);
+		dilate(fgM,fgM,element2);
 		
-		IplImage* fg = new IplImage(fgM);
+		//Compute Fg stationary  mask
+		IplImage *fg = new IplImage(fgM);
+		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask);
 		
-		//blob extraction
-		extractBlobs(frame, fg, blobList); 
-		//blob classification
-		classifyBlobs(frame, fg, blobList); 
-		outlabels = paintBlobClasses(frame, blobList);
-		
-		//showing results
+			
+		//
 		imshow("frame", frameM);
 		cvShowImage("mainWin",outlabels);
 		
@@ -91,10 +99,10 @@ int main()
 		total=total + end-start;
 		printf("Processing frame %d --> %.3g ms\n", i,end-start);
 			
-		cvWaitKey( 2 );
+		//cvWaitKey( 2 );
 
-		//write frame result to video
-		cvWriteFrame( videowriter, outlabels );		
+		//
+		//cvWriteFrame( videowriter, outlabels );		
 		
 		//release memory of temporal images
 		cvReleaseImage( &outblobs );
