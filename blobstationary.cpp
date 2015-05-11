@@ -32,10 +32,12 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
     Mat frameM(frame);
     Mat fgmaskM(fgmask);
     Mat fgmask_counterM(fgmask_counter);
-    Mat sfgmaskM(sfgmask);
-    
-    Size s_frame = frameM.size();
-    
+    //Mat sfgmaskM(sfgmask);
+   
+    //Size s_frame = frameM.size();
+    Size s_frame = fgmask_counterM.size();
+    Mat sfgmaskM(s_frame.width,s_frame.height,CV_8UC1);
+  
 	//operate with fgmask to update fgmask_counter
 	//...
 	//go through the image
@@ -43,20 +45,26 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 	//   check if in the previous frame it was FG 
 	//(we must have the same FG in 2 consecutive frames
 	for(int i = 0; i<s_frame.width ; i++){
-		for(int j = 0 ; i<s_frame.height ; j ++){
+		
+		for(int j = 0 ; j<s_frame.height ; j ++){
+			
 			if(fgmaskM.at<uchar>(j,i) == 255){
-				fgmask_counterM.at<uchar>(j,i) += 1;
+				
+				fgmask_counterM.at<uchar>(j,i) = fgmask_counterM.at<uchar>(j,i) + 1;
+				
 			}
 		}
 	}
 				
-			
+		
 	//operate with fgmask_counter to update sfgmask
 	//...
 	for(int i = 0; i<s_frame.width ; i++){
-		for(int j = 0 ; i<s_frame.height ; j ++){
-			if(fgmask_counterM.at<uchar>(j,i) >2){
+		for(int j = 0 ; j<s_frame.height ; j ++){
+			if(fgmask_counterM.at<uchar>(j,i) >= 2){
+				
 				sfgmaskM.at<uchar>(j,i) = 255;
+				
 			}
 		}
 	}
