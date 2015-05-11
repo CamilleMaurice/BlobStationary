@@ -43,7 +43,7 @@ int main()
     //subtractor.history = 1;
 	//this is for subsequent versions of OpenCV:
 	subtractor.set("nmixtures",3);
-	
+//	namedWindow("frameM",CV_WINDOW_AUTOSIZE);	
 	double start=0,end=0,total=0;	
 	int i = 0;
 	CvFont font;
@@ -57,36 +57,42 @@ int main()
 		printf("Problem opening video file\n");
 		return -1;
 	}
-	
+	 
+		cvNamedWindow("pouf", CV_WINDOW_AUTOSIZE); 
 	frame = cvQueryFrame( capture );
+	
+	Mat frameM(frame);
+
 	//affect
 	fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
-	namedWindow("frameM");
-	//cvNamedWindow("pouf", CV_WINDOW_AUTOSIZE); 
+
+
 	//cvShowImage("pouf",sfgmask);
 	//cvShowImage("test",fgmask_counter);
 		
 
 	//create output windows	
-	//namedWindow("BG");
+	
 	//namedWindow("fireMask");
 	//cvNamedWindow("mainWin", CV_WINDOW_AUTOSIZE); 
 	//create output writer
-	videowriter = cvCreateVideoWriter("result.mpg", CV_FOURCC('P','I','M','1'), 25, cvGetSize(frame), 1 );	
-	cvInitFont( &font, CV_FONT_HERSHEY_DUPLEX, 0.8, 0.8, 0, 2, 8 );
-	Mat frameM(frame);
+	//videowriter = cvCreateVideoWriter("result.mpg", CV_FOURCC('P','I','M','1'), 25, cvGetSize(frame), 1 );	
+	//cvInitFont( &font, CV_FONT_HERSHEY_DUPLEX, 0.8, 0.8, 0, 2, 8 );
+
 
 	subtractor.operator()(frameM,fgM);
     subtractor.getBackgroundImage(bgM);
 			
 	do
 	{
+	
+		cvShowImage("pouf",frame);
 		i++;
 		start =((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
 		//background subtraction (final foreground mask must be placed in 'fg' variable)		
 		subtractor.operator()(frameM,fgM,0.000000000000001);
         subtractor.getBackgroundImage(bgM);
-       
+		
         int erosion_size = 1;	
 		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 7 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
 		Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(10 * erosion_size + 1, 5 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
@@ -99,14 +105,15 @@ int main()
 
 		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask);
 	
-		imshow("frameM", frameM);
-		//cvShowImage("mainWin",outlabels);
+		//imshow("frameM",frameM);
+		//cvShowImage("pouf",fgmask_counter);
+		cvShowImage("pouf",sfgmask);
 		
 		end = ((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
 		total=total + end-start;
 		printf("Processing frame %d --> %.3g ms\n", i,end-start);
 			
-		//cvWaitKey( 2 );
+		cvWaitKey( 2 );
 
 		//
 		//cvWriteFrame( videowriter, outlabels );		

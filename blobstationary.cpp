@@ -36,7 +36,7 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
    
     //Size s_frame = frameM.size();
     Size s_frame = fgmask_counterM.size();
-    Mat sfgmaskM(s_frame.width,s_frame.height,CV_8UC1);
+    Mat sfgmaskM_aux(s_frame.width,s_frame.height,CV_8UC1);
   
 	//operate with fgmask to update fgmask_counter
 	//...
@@ -52,6 +52,8 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 				
 				fgmask_counterM.at<uchar>(j,i) = fgmask_counterM.at<uchar>(j,i) + 1;
 				
+			}else{
+				fgmask_counterM.at<uchar>(j,i) = 0;
 			}
 		}
 	}
@@ -63,11 +65,14 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 		for(int j = 0 ; j<s_frame.height ; j ++){
 			if(fgmask_counterM.at<uchar>(j,i) >= 2){
 				
-				sfgmaskM.at<uchar>(j,i) = 255;
+				sfgmaskM_aux.at<uchar>(j,i) = 255;
 				
+			}else{
+				sfgmaskM_aux.at<uchar>(j,i) = 0;
 			}
 		}
 	}
-	
+	IplImage copy = sfgmaskM_aux;
+	sfgmask = &copy;
 	return 1;
 }
