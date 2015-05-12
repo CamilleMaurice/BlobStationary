@@ -67,18 +67,13 @@ int main()
 	//fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
 	fgmask_counter = Mat::ones(frameM.rows, frameM.cols, CV_8U);
 
-	//cvShowImage("pouf",sfgmask);
-	//cvShowImage("test",fgmask_counter);
-		
-
-	//create output windows	
-	
-	namedWindow("sfg");
+	//namedWindow("sfg");
+	//imshow("sfg",fgmask_counter);
+	//cvWaitKey();
 	//cvNamedWindow("mainWin", CV_WINDOW_AUTOSIZE); 
 	//create output writer
 	//videowriter = cvCreateVideoWriter("result.mpg", CV_FOURCC('P','I','M','1'), 25, cvGetSize(frame), 1 );	
 	//cvInitFont( &font, CV_FONT_HERSHEY_DUPLEX, 0.8, 0.8, 0, 2, 8 );
-
 
 	subtractor.operator()(frameM,fgM);
     subtractor.getBackgroundImage(bgM);
@@ -86,7 +81,6 @@ int main()
 	do
 	{
 	
-		//cvShowImage("pouf",frame);
 		i++;
 		start =((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
 		//background subtraction (final foreground mask must be placed in 'fg' variable)		

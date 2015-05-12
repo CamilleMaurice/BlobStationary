@@ -45,20 +45,19 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_cou
 	//check if is FG
 	//   check if in the previous frame it was FG 
 	//(we must have the same FG in 2 consecutive frames
+	
 	for(int i = 0; i<s_frame.width ; i++){
-		
+
 		for(int j = 0 ; j<s_frame.height ; j ++){
+
 			
-			if(fgmaskM.at<uchar>(j,i) == 255 ){//&& fgmask_counter.at<uchar>(j,i)>=1){
-				
+			if(fgmaskM.at<uchar>(j,i) == 255 ){
 				fgmask_counter.at<uchar>(j,i) = fgmask_counter.at<uchar>(j,i) + 1;
-				
 			}else{
-				fgmask_counter.at<uchar>(j,i) = 0;
-			}
+				fgmask_counter.at<uchar>(j,i) = 0; //this is background
+			}					
 		}
 	}
-				
 		
 	//operate with fgmask_counter to update sfgmask
 	//...
@@ -66,7 +65,7 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_cou
 	for(int i = 0; i<s_frame.width ; i++){
 		for(int j = 0 ; j<s_frame.height ; j ++){
 			
-			if(fgmask_counter.at<uchar>(j,i) >= 2){
+			if(fgmask_counter.at<uchar>(j,i) > 60){
 				sfgmaskM.at<uchar>(j,i) = 255;//frameBW.at<uchar>(j,i);
 			
 		    }else{
