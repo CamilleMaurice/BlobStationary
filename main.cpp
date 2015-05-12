@@ -64,8 +64,8 @@ int main()
 	Mat frameM(frame);
 
 	//affect
-	fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
-
+	//fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
+	fgmask_counter = Mat::ones(frameM.rows, frameM.cols, CV_8U);
 
 	//cvShowImage("pouf",sfgmask);
 	//cvShowImage("test",fgmask_counter);
@@ -94,7 +94,7 @@ int main()
         subtractor.getBackgroundImage(bgM);
 		
         int erosion_size = 1;	
-		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
+		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(8 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
 		Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
 		erode(fgM,fgM,element1);
 		dilate(fgM,fgM,element2);
