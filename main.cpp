@@ -31,8 +31,8 @@ int main()
 	Mat outblobsM, outlabelsM;
 	IplImage *outblobs=NULL, *outlabels=NULL ; //output images for blob extraction and blob labels
 	BlobList *blobList = new BlobList();
-	IplImage *fgmask_counter= NULL;//ew IplImage();
-	IplImage *sfgmask = NULL;//new IplImage;
+	Mat fgmask_counter ; //= NULL;//ew IplImage();
+	Mat sfgmask ;//new IplImage;
 	
 	//cvSet(fgmask_counter, cvScalar(0));
 	
@@ -73,7 +73,7 @@ int main()
 
 	//create output windows	
 	
-	//namedWindow("fireMask");
+	namedWindow("sfg");
 	//cvNamedWindow("mainWin", CV_WINDOW_AUTOSIZE); 
 	//create output writer
 	//videowriter = cvCreateVideoWriter("result.mpg", CV_FOURCC('P','I','M','1'), 25, cvGetSize(frame), 1 );	
@@ -86,7 +86,7 @@ int main()
 	do
 	{
 	
-		cvShowImage("pouf",frame);
+		//cvShowImage("pouf",frame);
 		i++;
 		start =((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
 		//background subtraction (final foreground mask must be placed in 'fg' variable)		
@@ -94,8 +94,8 @@ int main()
         subtractor.getBackgroundImage(bgM);
 		
         int erosion_size = 1;	
-		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 7 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
-		Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(10 * erosion_size + 1, 5 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
+		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
+		Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
 		erode(fgM,fgM,element1);
 		dilate(fgM,fgM,element2);
 		
@@ -105,9 +105,9 @@ int main()
 
 		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask);
 	
-		//imshow("frameM",frameM);
+		//imshow("sfg",sfgmask);
 		//cvShowImage("pouf",fgmask_counter);
-		cvShowImage("pouf",sfgmask);
+		//cvShowImage("pouf",sfgmask);
 		
 		end = ((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
 		total=total + end-start;

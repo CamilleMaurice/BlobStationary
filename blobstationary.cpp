@@ -1,13 +1,15 @@
 #include "blobfuns.h"
 #include "opencv2/imgproc/imgproc_c.h"
 #include <opencv2/opencv.hpp>
-
+#include <iostream>
+#include <sstream>
 #define FPS 25 //framerate of the input video
 #define MIN_SECS 10.0 //minimum number of seconds to consider a foreground pixel as stationary
 
 #define C_COST 1 //increment cost for stationary detection
 #define D_COST 5 //penalization cost for stationary detection
 
+using namespace std;
 using namespace cv;
 
 /**
@@ -22,7 +24,7 @@ using namespace cv;
  *
  * \return Operation code (negative if not succesfull operation) 
  */
-int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgmask_counter, IplImage *sfgmask)
+int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_counter, Mat sfgmask)
 {
 	//check input validity and return -1 if any is not valid
 	//...
@@ -31,12 +33,11 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 	int numframes2static = (int)(FPS * MIN_SECS);
     Mat frameM(frame);
     Mat fgmaskM(fgmask);
-    Mat fgmask_counterM(fgmask_counter);
-    //Mat sfgmaskM(sfgmask);
-   
-    //Size s_frame = frameM.size();
-    Size s_frame = fgmask_counterM.size();
-    Mat sfgmaskM_aux(s_frame.width,s_frame.height,CV_8UC1);
+   	Mat frameBW ;
+	cvtColor(frameM, frameBW, CV_BGR2GRAY);
+    Size s_frame = frameBW.size();
+  //  Size s_frame = fgmask_counterM.size();
+    Mat sfgmaskM(s_frame.height,s_frame.width,CV_8UC1);
   
 	//operate with fgmask to update fgmask_counter
 	//...
@@ -48,12 +49,12 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 		
 		for(int j = 0 ; j<s_frame.height ; j ++){
 			
-			if(fgmaskM.at<uchar>(j,i) == 255){
+			if(fgmaskM.at<uchar>(j,i) == 255 ){
 				
-				fgmask_counterM.at<uchar>(j,i) = fgmask_counterM.at<uchar>(j,i) + 1;
+				fgmask_counter.at<uchar>(j,i) = fgmask_counter.at<uchar>(j,i) + 1;
 				
 			}else{
-				fgmask_counterM.at<uchar>(j,i) = 0;
+				fgmask_counter.at<uchar>(j,i) = 0;
 			}
 		}
 	}
@@ -61,18 +62,21 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, IplImage* fgma
 		
 	//operate with fgmask_counter to update sfgmask
 	//...
+	
 	for(int i = 0; i<s_frame.width ; i++){
 		for(int j = 0 ; j<s_frame.height ; j ++){
-			if(fgmask_counterM.at<uchar>(j,i) >= 2){
-				
-				sfgmaskM_aux.at<uchar>(j,i) = 255;
-				
-			}else{
-				sfgmaskM_aux.at<uchar>(j,i) = 0;
+			
+			if(fgmask_counter.at<uchar>(j,i) >= 50){
+				sfgmaskM.at<uchar>(j,i) = 255;//frameBW.at<uchar>(j,i);
+			
+		    }else{
+				sfgmaskM.at<uchar>(j,i) = 0;
 			}
 		}
 	}
-	IplImage copy = sfgmaskM_aux;
-	sfgmask = &copy;
+
+	sfgmask = sfgmaskM.clone();
+	namedWindow("sfg");
+	imshow("sfg",sfgmask);
 	return 1;
 }
