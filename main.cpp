@@ -7,7 +7,6 @@
  * \version 1.0\n 
  *
  */
-
 //standard and OpenCV functions
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
@@ -16,7 +15,7 @@
 //include for blob-related functions
 #include "blobfuns.h" 
 
-#define INPUT_VIDEO	"PETS06_S1-T1-C_3_abandoned_object_cif_mpeg.mpg"
+#define INPUT_VIDEO	"mh.mpg"
 
 using namespace cv;
 using namespace std;
@@ -33,19 +32,16 @@ int main()
 	BlobList *blobList = new BlobList();
 	Mat fgmask_counter ; 
 	Mat sfgmask ;
-    Mat C_counter;
+
 	Mat D_counter;
 	
-	
-	
+		
 	//BG subtractor initialization
 	cv::BackgroundSubtractorMOG2 subtractor;
     //this works on the university environment:
-    //subtractor.nmixtures = 3;
-    //subtractor.history = 1;
+    subtractor.nmixtures = 3;
 	//this is for subsequent versions of OpenCV:
-	subtractor.set("nmixtures",3);
-//	subtractor.set("detectShadows",0);  
+	//subtractor.set("nmixtures",3);
 //	namedWindow("frameM",CV_WINDOW_AUTOSIZE);	
 	double start=0,end=0,total=0;	
 	int i = 0;
@@ -71,7 +67,9 @@ int main()
 	//affect
 	//fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
 	fgmask_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
+	Mat C_counter;//(frameBW.rows, frameBW.cols, CV_8UC1, Scalar(0));
 	C_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
+
 	D_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
 	namedWindow("sfg");
 	namedWindow("fg_binary");

@@ -12,5 +12,5 @@ int classifyBlobs(IplImage* frame, IplImage *fgmask, BlobList *pBlobList);
 IplImage *paintBlobClasses(IplImage* frame, BlobList *pBlobList);
 
 //stationary foreground segmentation
-int detectStationaryForeground(IplImage *frame, IplImage *fgmask, Mat fgmask_counter, Mat sfgmask);
+int detectStationaryForeground(IplImage *frame, IplImage *fgmask, Mat fgmask_counter, Mat sfgmask,Mat C_counter, Mat D_counter);
 #endif
