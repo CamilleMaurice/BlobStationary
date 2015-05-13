@@ -74,8 +74,8 @@ int main()
 	C_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
 	D_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
 	namedWindow("sfg");
-	
-			
+	namedWindow("fg_binary");
+	Mat fg_binary;		
 	do
 	{
 	
@@ -84,18 +84,19 @@ int main()
 		//background subtraction (final foreground mask must be placed in 'fg' variable)		
 		subtractor.operator()(frameM,fgM,0.000000000000001);
         subtractor.getBackgroundImage(bgM);
-		
+        
+		threshold( fgM, fg_binary, 200, 255, 3);
 		
 		
         int erosion_size = 1;	
-		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(8 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
+		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(3 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
 		Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
-		erode(fgM,fgM,element1);
-		dilate(fgM,fgM,element2);
-		
+		erode(fg_binary,fg_binary,element1);
+		dilate(fg_binary,fg_binary,element2);
+		imshow("fg_binary",fg_binary);
 		
 		//Compute Fg stationary  mask
-		IplImage *fg = new IplImage(fgM);
+		IplImage *fg = new IplImage(fg_binary);
 
 		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask,C_counter,D_counter);
 	

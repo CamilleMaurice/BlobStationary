@@ -6,7 +6,7 @@
 #define FPS 25 //framerate of the input video
 #define MIN_SECS 10.0 //minimum number of seconds to consider a foreground pixel as stationary
 
-#define C_COST 1 //increment cost for stationary detection
+#define C_COST 0 //increment cost for stationary detection
 #define D_COST 5 //penalization cost for stationary detection
 
 using namespace std;
@@ -44,7 +44,7 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_cou
 	//Go though the image to increment or decrement the appropriate counter
 	for(int i = 0; i < s_frame.width ; i++){
 		for(int j = 0 ; j < s_frame.height ; j ++){			
-			if(fgmaskM.at<uchar>(j,i) > 5 ){
+			if(fgmaskM.at<uchar>(j,i) == 255 ){
 				C_counter.at<uchar>(j,i) = C_counter.at<uchar>(j,i) + C_COST; 
 				if(fgmask_counter.at<uchar>(j,i) + C_counter.at<uchar>(j,i)*(255/numframes2static) > 255){
 					fgmask_counter.at<uchar>(j,i) = 255;
@@ -56,16 +56,17 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_cou
 				
 			}else{
 				C_counter.at<uchar>(j,i) = 0;
-				D_counter.at<uchar>(j,i) = D_counter.at<uchar>(j,i) + D_COST; 
-				if(fgmask_counter.at<uchar>(j,i) - D_counter.at<uchar>(j,i)*(255/numframes2static) < 0 ){
-					fgmask_counter.at<uchar>(j,i) = 0;
-				}else{
-					fgmask_counter.at<uchar>(j,i) = fgmask_counter.at<uchar>(j,i) -D_counter.at<uchar>(j,i)*(255/numframes2static);
-				}
-			}
+				//~ D_counter.at<uchar>(j,i) = D_counter.at<uchar>(j,i) + D_COST; 
+				//~ if(fgmask_counter.at<uchar>(j,i) - D_counter.at<uchar>(j,i)*(255/numframes2static) < 0 ){
+					//~ fgmask_counter.at<uchar>(j,i) = 0;
+				//~ }else{
+					//~ fgmask_counter.at<uchar>(j,i) = fgmask_counter.at<uchar>(j,i) -D_counter.at<uchar>(j,i)*(255/numframes2static);
+				//~ }
+			//~ }
 			   
 		}
 	}
+}
 
 	
 	//operate with fgmask_counter to update sfgmask
@@ -83,7 +84,7 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_cou
 	//~ }
 	
 	namedWindow("sfg");
-	imshow("sfg",fgmask_counter);
+	imshow("sfg",C_counter);
 	
 	
 	sfgmask = sfgmaskM.clone();
