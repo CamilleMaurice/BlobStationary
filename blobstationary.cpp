@@ -24,7 +24,7 @@ using namespace cv;
  *
  * \return Operation code (negative if not succesfull operation) 
  */
-int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_counter, Mat sfgmask)
+int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_counter, Mat sfgmask, Mat C_counter,Mat D_counter)
 {
 	//check input validity and return -1 if any is not valid
 	//...
@@ -36,46 +36,59 @@ int detectStationaryForeground(IplImage* frame, IplImage *fgmask, Mat fgmask_cou
    	Mat frameBW ;
 	cvtColor(frameM, frameBW, CV_BGR2GRAY);
     Size s_frame = frameBW.size();
-  //  Size s_frame = fgmask_counterM.size();
+
     Mat sfgmaskM(s_frame.height,s_frame.width,CV_8UC1);
-  
-	//operate with fgmask to update fgmask_counter
-	//...
-	//go through the image
-	//check if is FG
-	//   check if in the previous frame it was FG 
-	//(we must have the same FG in 2 consecutive frames
+	sfgmaskM = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
+	fgmask_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
 	
-	for(int i = 0; i<s_frame.width ; i++){
-
-		for(int j = 0 ; j<s_frame.height ; j ++){
-
-			
-			if(fgmaskM.at<uchar>(j,i) == 255 ){
-				fgmask_counter.at<uchar>(j,i) = fgmask_counter.at<uchar>(j,i) + 1;
+	//Go though the image to increment or decrement the appropriate counter
+	for(int i = 0; i < s_frame.width ; i++){
+		for(int j = 0 ; j < s_frame.height ; j ++){			
+			if(fgmaskM.at<uchar>(j,i) > 5 ){
+				C_counter.at<uchar>(j,i) = C_counter.at<uchar>(j,i) + C_COST; 
+				if(fgmask_counter.at<uchar>(j,i) + C_counter.at<uchar>(j,i)*(255/numframes2static) > 255){
+					fgmask_counter.at<uchar>(j,i) = 255;
+					cout << "STATIC OBJECT DETECTED"<< endl ;
+					//ON NE PASSE JAMAIS ICIm j'ai limpression que quelque chose se reset. (le sac est blanc puis noir...puis blanc)
+				}else{
+				fgmask_counter.at<uchar>(j,i) = fgmask_counter.at<uchar>(j,i) +C_counter.at<uchar>(j,i)*(255/numframes2static);
+				}				
+				
 			}else{
-				fgmask_counter.at<uchar>(j,i) = 0; //this is background
-			}					
+				C_counter.at<uchar>(j,i) = 0;
+				D_counter.at<uchar>(j,i) = D_counter.at<uchar>(j,i) + D_COST; 
+				if(fgmask_counter.at<uchar>(j,i) - D_counter.at<uchar>(j,i)*(255/numframes2static) < 0 ){
+					fgmask_counter.at<uchar>(j,i) = 0;
+				}else{
+					fgmask_counter.at<uchar>(j,i) = fgmask_counter.at<uchar>(j,i) -D_counter.at<uchar>(j,i)*(255/numframes2static);
+				}
+			}
+			   
 		}
 	}
-		
+
+	
 	//operate with fgmask_counter to update sfgmask
 	//...
 	
-	for(int i = 0; i<s_frame.width ; i++){
-		for(int j = 0 ; j<s_frame.height ; j ++){
-			
-			if(fgmask_counter.at<uchar>(j,i) > 60){
-				sfgmaskM.at<uchar>(j,i) = 255;//frameBW.at<uchar>(j,i);
-			
-		    }else{
-				sfgmaskM.at<uchar>(j,i) = 0;
-			}
-		}
-	}
-
-	sfgmask = sfgmaskM.clone();
+	//~ for(int i = 0; i<s_frame.width ; i++){
+		//~ for(int j = 0 ; j<s_frame.height ; j ++){
+			//~ 
+			//~ if(fgmask_counter.at<uchar>(j,i) >= 240){
+				//~ sfgmaskM.at<uchar>(j,i) = 255;
+			//~ }else{
+				//~ sfgmaskM.at<uchar>(j,i) = 0;
+			//~ }
+		//~ }
+	//~ }
+	
 	namedWindow("sfg");
-	imshow("sfg",sfgmask);
+	imshow("sfg",fgmask_counter);
+	
+	
+	sfgmask = sfgmaskM.clone();
+	
+
+
 	return 1;
 }

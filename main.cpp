@@ -16,7 +16,7 @@
 //include for blob-related functions
 #include "blobfuns.h" 
 
-#define INPUT_VIDEO	"mh.mpg"
+#define INPUT_VIDEO	"PETS06_S1-T1-C_3_abandoned_object_cif_mpeg.mpg"
 
 using namespace cv;
 using namespace std;
@@ -31,10 +31,12 @@ int main()
 	Mat outblobsM, outlabelsM;
 	IplImage *outblobs=NULL, *outlabels=NULL ; //output images for blob extraction and blob labels
 	BlobList *blobList = new BlobList();
-	Mat fgmask_counter ; //= NULL;//ew IplImage();
-	Mat sfgmask ;//new IplImage;
+	Mat fgmask_counter ; 
+	Mat sfgmask ;
+    Mat C_counter;
+	Mat D_counter;
 	
-	//cvSet(fgmask_counter, cvScalar(0));
+	
 	
 	//BG subtractor initialization
 	cv::BackgroundSubtractorMOG2 subtractor;
@@ -43,6 +45,7 @@ int main()
     //subtractor.history = 1;
 	//this is for subsequent versions of OpenCV:
 	subtractor.set("nmixtures",3);
+//	subtractor.set("detectShadows",0);  
 //	namedWindow("frameM",CV_WINDOW_AUTOSIZE);	
 	double start=0,end=0,total=0;	
 	int i = 0;
@@ -58,25 +61,20 @@ int main()
 		return -1;
 	}
 	 
-		cvNamedWindow("pouf", CV_WINDOW_AUTOSIZE); 
+	cvNamedWindow("pouf", CV_WINDOW_AUTOSIZE); 
 	frame = cvQueryFrame( capture );
 	
+	
 	Mat frameM(frame);
-
+   	Mat frameBW ;
+	cvtColor(frameM, frameBW, CV_BGR2GRAY);
 	//affect
 	//fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
-	fgmask_counter = Mat::ones(frameM.rows, frameM.cols, CV_8U);
-
-	//namedWindow("sfg");
-	//imshow("sfg",fgmask_counter);
-	//cvWaitKey();
-	//cvNamedWindow("mainWin", CV_WINDOW_AUTOSIZE); 
-	//create output writer
-	//videowriter = cvCreateVideoWriter("result.mpg", CV_FOURCC('P','I','M','1'), 25, cvGetSize(frame), 1 );	
-	//cvInitFont( &font, CV_FONT_HERSHEY_DUPLEX, 0.8, 0.8, 0, 2, 8 );
-
-	subtractor.operator()(frameM,fgM);
-    subtractor.getBackgroundImage(bgM);
+	fgmask_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
+	C_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
+	D_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
+	namedWindow("sfg");
+	
 			
 	do
 	{
@@ -86,6 +84,8 @@ int main()
 		//background subtraction (final foreground mask must be placed in 'fg' variable)		
 		subtractor.operator()(frameM,fgM,0.000000000000001);
         subtractor.getBackgroundImage(bgM);
+		
+		
 		
         int erosion_size = 1;	
 		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(8 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
@@ -97,10 +97,10 @@ int main()
 		//Compute Fg stationary  mask
 		IplImage *fg = new IplImage(fgM);
 
-		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask);
+		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask,C_counter,D_counter);
 	
-		//imshow("sfg",sfgmask);
-		//cvShowImage("pouf",fgmask_counter);
+		imshow("fg",fgM);
+		cvShowImage("pouf",frame);
 		//cvShowImage("pouf",sfgmask);
 		
 		end = ((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
