@@ -19,26 +19,22 @@ using namespace cv;
  *
  * \return Operation code (negative if not succesfull operation) 
  */
-int extractBlobs(IplImage *frameIpl, IplImage *fgmaskIpl, BlobList *pBlobList)
+int extractBlobs(IplImage *frameIpl, Mat fgmask, BlobList *pBlobList)
 {	
-	if(frameIpl == NULL || fgmaskIpl == NULL){
+	if(frameIpl == NULL){
 		std::cerr<<"frame or FG mask not defined"<<std::endl<<"exiting..."<<std::endl;
 		return -1;
 	}
 	
 	//required variables for connected component analysis 
 	Mat frame(frameIpl);
-	Mat fgmask(fgmaskIpl);
+	//Mat fgmask(fgmaskIpl);
 	Size s=frame.size();
 	/*Pre-processing of mask to improve the blob extraction: 
 	 * some eroding to get rid of most of the noise
 	 * then some wider dilating to get merge regions that should be connected but aren't in the FG mask
 	 */
-	int erosion_size = 1;	
-	Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
-    Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(10 * erosion_size + 1, 10 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
-	erode(fgmask,fgmask,element1);
-	dilate(fgmask,fgmask,element2);
+	threshold(fgmask,fgmask,250,255,THRESH_BINARY);
 
 	Mat fireMask(s.width+2,s.height+2,CV_8UC1);
 	copyMakeBorder(fgmask,fireMask,1,1,1,1,BORDER_CONSTANT,0);
@@ -57,9 +53,10 @@ int extractBlobs(IplImage *frameIpl, IplImage *fgmaskIpl, BlobList *pBlobList)
 				case 255:
 					fireMask.at<uchar>(y,x)=0;//if a pix is detected as FG we want to search for CC in it
 					break;
-				default:
+				case 0:
 					fireMask.at<uchar>(y,x)=255;//not if it is detected as BG or shadow
 					break;
+				
 			};
 		}
 	}
@@ -92,5 +89,59 @@ int extractBlobs(IplImage *frameIpl, IplImage *fgmaskIpl, BlobList *pBlobList)
 		}
 	}
 	return EXIT_SUCCESS;
+}
+
+/**
+ *	Draw blobs (and its classes) with different color rectangles on the image 'frame'. All the input arguments must be 
+ *  initialized when using this function.
+ *
+ * \param frame Input image 
+ * \param pBlobList List to store the blobs found 
+ *
+ * \return Image containing the draw blobs. If no blobs have to be painted 
+ *  or arguments are wrong, the function returns NULL. The memory of this image 
+ * is created inside this function so it has to be released after its use by the 
+ * function calling 'paintBlobImage'.
+ */
+IplImage *paintBlobClasses(IplImage* frame, BlobList *pBlobList)
+{
+	IplImage* blobImage;
+	blobImage = cvCloneImage(frame);
+	if ( frame == NULL || pBlobList == NULL )
+	{
+		return NULL;
+	}	
+
+	//required variables to paint
+	float H,W,x,y;
+	class classified;
+	
+	//paint each blob of the list
+	for(int i = 0; i < pBlobList->getBlobNum(); i++) 	
+	{	
+		//get info about the ithblob
+		BasicBlob* ith_blob = pBlobList->getBlob(i); 
+		
+		H = ith_blob->getHeight();
+		W = ith_blob->getWidth();
+		x = ith_blob->getX();
+		y = ith_blob->getY();
+		
+		
+		cvRectangle( blobImage, cvPoint(x,y), cvPoint(W+x, H+y), CV_RGB( 0, 255, 0 ), 2, 8, 0 );
+		if(ith_blob->getlabel() == (CLASS) 3){
+			cvRectangle( blobImage, cvPoint(x,y), cvPoint(W+x, H+y), CV_RGB( 100, 0, 0 ), 2, 8, 0 );
+			
+		}
+		if(ith_blob->getlabel() == (CLASS) 1){
+			cvRectangle( blobImage, cvPoint(x,y), cvPoint(W+x, H+y), CV_RGB( 0, 0, 100 ), 2, 8, 0 );
+		}
+
+	}
+
+	//destroy all resources (if required)
+
+	//return the image to show
+	return blobImage;
 }
 

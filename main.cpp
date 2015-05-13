@@ -28,7 +28,7 @@ int main()
 	Mat fgM, bgM;
 	IplImage *frame=NULL; //images for background subtraction	
 	Mat outblobsM, outlabelsM;
-	IplImage *outblobs=NULL, *outlabels=NULL ; //output images for blob extraction and blob labels
+	IplImage *outblobs=NULL; //output images for blob extraction and blob labels
 	BlobList *blobList = new BlobList();
 	Mat fgmask_counter ; 
 	Mat sfgmask ;
@@ -57,7 +57,7 @@ int main()
 	 
 	cvNamedWindow("frame", CV_WINDOW_AUTOSIZE); 	
 	namedWindow("stationarymask");
-	
+	cvNamedWindow("sBlobs");
 	frame = cvQueryFrame( capture );
 	
 	Mat frameM(frame);
@@ -92,6 +92,10 @@ int main()
 		IplImage *fg = new IplImage(fg_binary);
 	
 		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask);
+		extractBlobs(frame,sfgmask,blobList);
+		outblobs = paintBlobClasses(frame,blobList);
+		
+		cvShowImage("sBlobs",outblobs);
 
 		imshow("stationarymask",sfgmask);
 		cvShowImage("frame",frame);
@@ -109,7 +113,7 @@ int main()
 		
 		//release memory of temporal images
 		cvReleaseImage( &outblobs );
-		cvReleaseImage( &outlabels );
+		
 
 	} while(frame=cvQueryFrame(capture));
 	//destroy all resources

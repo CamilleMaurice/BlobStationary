@@ -5,7 +5,7 @@
 #include "opencv2/core/core.hpp"
 using namespace cv;
 //blob extraction functions (included in 'blobextrac.cpp')
-int extractBlobs(IplImage * frame,IplImage * fgmask, BlobList *pBlobList);
+int extractBlobs(IplImage * frame,Mat fgmask, BlobList *pBlobList);
 
 //blob classification functions (included in 'blobclassify.cpp')
 int classifyBlobs(IplImage* frame, IplImage *fgmask, BlobList *pBlobList);
