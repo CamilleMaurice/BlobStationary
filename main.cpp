@@ -15,7 +15,7 @@
 //include for blob-related functions
 #include "blobfuns.h" 
 
-#define INPUT_VIDEO	"mh.mpg"
+#define INPUT_VIDEO	"PETS06_S1-T1-C_3_abandoned_object_cif_mpeg.mpg"
 
 using namespace cv;
 using namespace std;
@@ -33,8 +33,6 @@ int main()
 	Mat fgmask_counter ; 
 	Mat sfgmask ;
 
-	Mat D_counter;
-	
 		
 	//BG subtractor initialization
 	cv::BackgroundSubtractorMOG2 subtractor;
@@ -57,58 +55,56 @@ int main()
 		return -1;
 	}
 	 
-	cvNamedWindow("pouf", CV_WINDOW_AUTOSIZE); 
-	frame = cvQueryFrame( capture );
+	cvNamedWindow("frame", CV_WINDOW_AUTOSIZE); 	
+	namedWindow("stationarymask");
 	
+	frame = cvQueryFrame( capture );
 	
 	Mat frameM(frame);
    	Mat frameBW ;
 	cvtColor(frameM, frameBW, CV_BGR2GRAY);
-	//affect
-	//fgmask_counter=cvCreateImage(cvGetSize(frame), IPL_DEPTH_8U, 1);//0;//check 
-	fgmask_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
-	Mat C_counter;//(frameBW.rows, frameBW.cols, CV_8UC1, Scalar(0));
-	C_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
 
-	D_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
-	namedWindow("sfg");
-	namedWindow("fg_binary");
+	fgmask_counter = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
+	sfgmask = Mat::zeros(frameBW.rows, frameBW.cols, CV_8UC1);
 	Mat fg_binary;		
+	
 	do
 	{
 	
 		i++;
 		start =((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
+		
 		//background subtraction (final foreground mask must be placed in 'fg' variable)		
 		subtractor.operator()(frameM,fgM,0.000000000000001);
         subtractor.getBackgroundImage(bgM);
-        
+
+		//Get a binary foreground mask
 		threshold( fgM, fg_binary, 200, 255, 3);
-		
-		
+
+		//Erosion and dilation operations
         int erosion_size = 1;	
 		Mat element1 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(3 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
 		Mat element2 = getStructuringElement(cv::MORPH_ELLIPSE,cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),cv::Point(erosion_size, erosion_size) );
 		erode(fg_binary,fg_binary,element1);
 		dilate(fg_binary,fg_binary,element2);
-		imshow("fg_binary",fg_binary);
-		
+
 		//Compute Fg stationary  mask
 		IplImage *fg = new IplImage(fg_binary);
-
-		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask,C_counter,D_counter);
 	
-		imshow("fg",fgM);
-		cvShowImage("pouf",frame);
-		//cvShowImage("pouf",sfgmask);
-		
+		detectStationaryForeground(frame,fg,fgmask_counter,sfgmask);
+
+		imshow("stationarymask",sfgmask);
+		cvShowImage("frame",frame);
+	
 		end = ((double)cvGetTickCount()/(cvGetTickFrequency()*1000.) );
+
 		total=total + end-start;
 		printf("Processing frame %d --> %.3g ms\n", i,end-start);
+
 			
 		cvWaitKey( 2 );
 
-		//
+		
 		//cvWriteFrame( videowriter, outlabels );		
 		
 		//release memory of temporal images
